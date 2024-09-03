@@ -16,4 +16,4 @@ class Transformer(torch.nn.Module):
         for block in self.transformer_blocks: 
             x = block(x)
         x = self.output_projection(x)
-        return torch.nn.functional.softmax(x, dim=-1) # final softmax-layer ??
+        return x #torch.nn.functional.softmax(x, dim=-1) # final softmax-layer ??

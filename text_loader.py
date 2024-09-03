@@ -18,6 +18,7 @@ class TextData(Dataset):
         super(TextData, self).__init__()
         with open(file_path, "r") as f:
             text = f.read()
+        text = text[:len(text) // 20]
         tokenized_text, self.vocab_size = tokenize(text)
         text_chunks = list(_chunkify(tokenized_text, context_length))
         target_text_chunks = list(_chunkify(tokenized_text, context_length, 1))

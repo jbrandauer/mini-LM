@@ -42,7 +42,7 @@ class MaskedSelfAttentionLayer(torch.nn.Module):
         self.queries_layer = torch.nn.Linear(dim_in, dim_out, bias = False, dtype=self.dtype)
         self.values_layer = torch.nn.Linear(dim_in, dim_out, bias=False, dtype=self.dtype)
         self.softmax_layer = torch.nn.Softmax(dim=-1)
-    def get_att_scores(self, keys, queries):
+    def _get_att_scores(self, keys, queries):
         """
         Implements computation of attention scores:
         :params keys: keys [B, N, D]
@@ -66,7 +66,7 @@ class MaskedSelfAttentionLayer(torch.nn.Module):
         queries = self.queries_layer(x)
         values = self.values_layer(x)
         # attention mechanism
-        att_scores = self.get_att_scores(keys, queries) # shape: [B, N, N]
+        att_scores = self._get_att_scores(keys, queries) # shape: [B, N, N]
 
         return torch.einsum('bjd, bij->bid', values, att_scores) # shape: [B, N, D]
 

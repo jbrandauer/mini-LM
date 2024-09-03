@@ -39,8 +39,8 @@ class TransformerBlock(nn.Module):
         )
         self.feed_forward = FeedForward(dim_in=emb_dim, dim_ff=dim_ff, dim_out=emb_dim, dtype=self.dtype)
     def forward(self, x):
-        x_prime = x + self.multi_head_att(self.layer_norm_1(x))
-        return x_prime+self.feed_forward(self.layer_norm_2(x_prime))
+        x_prime = x + self.multi_head_att(x)#self.layer_norm_1(x))
+        return x_prime+self.feed_forward(x) #self.layer_norm_2(x_prime))
     
 class PositionEncoding(nn.Module):
     def __init__(self, emb_dim: int, context_length: int, dtype=torch.float32):
@@ -65,13 +65,13 @@ class PositionEncoding(nn.Module):
 if(__name__ == "__main__"):
     
 
-    tokens = 10
-    dimensions = 64
+    tokens = 20
+    dimensions = 256
     input = torch.zeros((tokens, dimensions))
 
     pos_encoding = PositionEncoding(dimensions, tokens)
     pe = pos_encoding(input)
-    pe = pe.detach().cpu().numpy()
+    pe = pe[0].detach().cpu().numpy()
     print(pe.shape)
 
     plt.figure(figsize=(12,8))
