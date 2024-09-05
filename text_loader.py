@@ -18,8 +18,8 @@ class TextData(Dataset):
         super(TextData, self).__init__()
         with open(file_path, "r") as f:
             text = f.read()
-        text = text[:len(text) // 20]
-        tokenized_text, self.vocab_size = tokenize(text)
+        text = text[:len(text)]
+        (tokenized_text, self.word_to_index, self.index_to_word), self.vocab_size = tokenize(text)
         text_chunks = list(_chunkify(tokenized_text, context_length))
         target_text_chunks = list(_chunkify(tokenized_text, context_length, 1))
         if(Path("text_data.json").exists()):
@@ -51,15 +51,17 @@ class TextData(Dataset):
 def get_text_data_loader(batch_size: int,
                          context_length: int,
                          file_path: str = "shakespeare.rtf"):
+    dataset = TextData(file_path, context_length)
     data_loader = DataLoader(dataset=TextData(file_path, context_length), batch_size=batch_size, shuffle=True)
-    return data_loader
+    return data_loader, dataset.word_to_index, dataset.index_to_word
         
 
 
 if(__name__=="__main__"):
-    data_loader = get_text_data_loader(batch_size=4, context_length=10)
+    data_loader, _, _ = get_text_data_loader(batch_size=4, context_length=10)
     for i, (input, target) in enumerate(data_loader):
         if(i>4):
             break
         print("First batch shape: ", input.shape)
         print("First batch target: ", target.shape)
+

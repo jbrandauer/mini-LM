@@ -47,19 +47,30 @@ class PositionEncoding(nn.Module):
         super(PositionEncoding, self).__init__()
         self.emb_dim = emb_dim
         self.context_length = context_length
-        if emb_dim % 2 != 0:
+        self.dtype = dtype
+        self.position_encoding = self._compute_pos_encoding(seq_length=self.context_length)
+
+    def _compute_pos_encoding(self, seq_length: int):
+        if self.emb_dim % 2 != 0:
             raise ValueError("Cannot use sin/cos positional encoding with "
-                         "odd dim (got dim={:d})".format(emb_dim))
-        pe = torch.zeros(context_length, emb_dim, dtype=dtype)
-        position = torch.arange(0, context_length, dtype=dtype).unsqueeze(1)
-        div_term = torch.exp((torch.arange(0, emb_dim, 2, dtype=torch.float) *
-                         -(math.log(10000.0) / emb_dim)))
+                         "odd dim (got dim={:d})".format(self.emb_dim))
+        pe = torch.zeros(seq_length, self.emb_dim, dtype=self.dtype)
+        position = torch.arange(0, seq_length, dtype=self.dtype).unsqueeze(1)
+        div_term = torch.exp((torch.arange(0, self.emb_dim, 2, dtype=torch.float) *
+                         -(math.log(10000.0) / self.emb_dim)))
         pe[:, 0::2] = torch.sin(position.float() * div_term)
         pe[:, 1::2] = torch.cos(position.float() * div_term)
-        self.position_encoding = pe
-    def forward(self, input:torch.Tensor)->torch.Tensor:
-        B = input.shape[0]
-        return input+self.position_encoding.expand(B, -1, -1)
+        return pe
+
+    def forward(self, input:torch.Tensor, seq_length: int | None = None)->torch.Tensor:
+        if seq_length is not None:
+            position_encoding = self._compute_pos_encoding(seq_length)
+            B = input.shape[0]
+            output = input + position_encoding.expand(B, -1, -1)
+        else:
+            B = input.shape[0]
+            output = input+self.position_encoding.expand(B, -1, -1)
+        return output
 
 
 if(__name__ == "__main__"):
